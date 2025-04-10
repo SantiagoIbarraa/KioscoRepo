@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosco Escolar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>KIOSCO ESCOLAR</h1>
+    </div>
+    
+    <div class="main-content">
+        <div class="category-container">
+            <div class="category">
+                <div class="category-image">
+                    <img src="https://placehold.co/600x400" alt="Ensaladas">
+                </div>
+                <div class="category-info">
+                    <h3>Ensaladas</h3>
+                    <p>descripción general</p>
+                    <a href="#" class="go-btn">Ir »</a>
+                </div>
+            </div>
+            
+            <div class="category">
+                <div class="category-image">
+                    <img src="https://placehold.co/600x400" alt="Comidas">
+                </div>
+                <div class="category-info">
+                    <h3>Comidas</h3>
+                    <p>descripción general</p>
+                    <a href="#" class="go-btn">Ir »</a>
+                </div>
+            </div>
+            
+            <div class="category">
+                <div class="category-image">
+                    <img src="https://placehold.co/600x400" alt="Bebidas">
+                </div>
+                <div class="category-info">
+                    <h3>Bebidas</h3>
+                    <p>descripción general</p>
+                    <a href="#" class="go-btn">Ir »</a>
+                </div>
+            </div>
+            
+            <div class="category">
+                <div class="category-image">
+                    <img src="https://placehold.co/600x400" alt="Falafel">
+                </div>
+                <div class="category-info">
+                    <h3>Falafel</h3>
+                    <p>descripción general</p>
+                    <a href="#" class="go-btn">Ir »</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="order-section">
+            <h2>REALIZA TU PEDIDO</h2>
+            <p>Elige tus productos y añádelos a tu pedido</p>
+        </div>
+        
+        <div class="cart-icon" id="cartIcon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+        </div>
+        
+        <div class="side-menu-toggle" id="sideMenuToggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1f2122">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+            </svg>
+        </div>
+        
+        <div class="side-menu" id="sideMenu">
+            <h3>Menú</h3>
+            <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Ensaladas</a></li>
+                <li><a href="#">Comidas</a></li>
+                <li><a href="#">Bebidas</a></li>
+                <li><a href="#">Falafel</a></li>
+                <li><a href="#">Mi Cuenta</a></li>
+                <li><a href="#">Historial de Pedidos</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-content">
+            <h2 class="cart-title">PEDIDO</h2>
+            
+            <div class="cart-section">
+                <h3 class="cart-section-title">ENSALADA</h3>
+                <div class="cart-item">
+                    Tomate
+                </div>
+                <div class="cart-item">
+                    Lechuga
+                </div>
+            </div>
+            
+            <div class="cart-section">
+                <h3 class="cart-section-title">BEBIDA</h3>
+                <div class="cart-item">
+                    Sprite <span class="quantity">(1)</span>
+                </div>
+                <div class="cart-item">
+                    Fanta <span class="quantity">(2)</span>
+                </div>
+            </div>
+
+            <div class="cart-actions">
+                <button class="comprar-btn">Comprar »</button>
+                <button class="volver-btn">« Volver</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Cart modal
+        const cartIcon = document.getElementById('cartIcon');
+        const cartModal = document.getElementById('cartModal');
+        const volverBtn = document.querySelector('.volver-btn');
+        
+        cartIcon.addEventListener('click', () => {
+            cartModal.classList.add('open');
+        });
+        
+        volverBtn.addEventListener('click', () => {
+            cartModal.classList.remove('open');
+        });
+        
+        // Close cart modal when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!cartModal.contains(e.target) && !cartIcon.contains(e.target)) {
+                cartModal.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
