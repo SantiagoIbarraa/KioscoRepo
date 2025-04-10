@@ -120,26 +120,6 @@
         </div>
     </div>
     
-    <script>
-        // Cart modal
-        const cartIcon = document.getElementById('cartIcon');
-        const cartModal = document.getElementById('cartModal');
-        const volverBtn = document.querySelector('.volver-btn');
-        
-        cartIcon.addEventListener('click', () => {
-            cartModal.classList.add('open');
-        });
-        
-        volverBtn.addEventListener('click', () => {
-            cartModal.classList.remove('open');
-        });
-        
-        // Close cart modal when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!cartModal.contains(e.target) && !cartIcon.contains(e.target)) {
-                cartModal.classList.remove('open');
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
