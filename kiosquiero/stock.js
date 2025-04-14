@@ -20,7 +20,7 @@ let categories = [
         description: 'Galletitas, Postres, Snacks',
         items: []
     }
-];
+]
 
 const sampleItems = {
     'Comidas': [
@@ -37,22 +37,22 @@ const sampleItems = {
         { name: 'Galletas', quantity: 20, image: 'https://placehold.co/100x100' },
         { name: 'Snacks', quantity: 15, image: 'https://placehold.co/100x100' }
     ]
-};
+}
 
-const categoriesContainer = document.querySelector('.categories-container');
-const stockDetails = document.getElementById('stockDetails');
-const closeStockDetails = document.getElementById('closeStockDetails');
-const categoryNameElement = document.querySelector('.category-name');
-const itemsList = document.querySelector('.items-list');
-const addItemButton = document.querySelector('.btn-add-item');
-const stockModal = document.getElementById('stockModal');
-const closeStockModal = document.getElementById('closeStockModal');
-const stockForm = document.getElementById('stockForm');
+const categoriesContainer = document.querySelector('.categories-container')
+const stockDetails = document.getElementById('stockDetails')
+const closeStockDetails = document.getElementById('closeStockDetails')
+const categoryNameElement = document.querySelector('.category-name')
+const itemsList = document.querySelector('.items-list')
+const addItemButton = document.querySelector('.btn-add-item')
+const stockModal = document.getElementById('stockModal')
+const closeStockModal = document.getElementById('closeStockModal')
+const stockForm = document.getElementById('stockForm')
 
 document.getElementById('burgerMenu').addEventListener('click', function() {
-    this.classList.toggle('active');
-    document.getElementById('sideMenu').classList.toggle('active');
-});
+    this.classList.toggle('active')
+    document.getElementById('sideMenu').classList.toggle('active')
+})
 
 function renderCategories() {
     categoriesContainer.innerHTML = categories.map(category => `
@@ -62,29 +62,29 @@ function renderCategories() {
             <p>${category.description}</p>
             <button class="btn-ir">Ir >>></button>
         </div>
-    `).join('');
+    `).join('')
 
     document.querySelectorAll('.category-card').forEach(card => {
         card.addEventListener('click', () => {
-            const categoryId = parseInt(card.dataset.id);
-            const category = categories.find(c => c.id === categoryId);
-            showCategoryDetails(category);
-        });
-    });
+            const categoryId = parseInt(card.dataset.id)
+            const category = categories.find(c => c.id === categoryId)
+            showCategoryDetails(category)
+        })
+    })
 }
 
 function showCategoryDetails(category) {
-    categoryNameElement.textContent = category.name;
-    renderItems(category.name);
-    stockDetails.classList.add('active');
+    categoryNameElement.textContent = category.name
+    renderItems(category.name)
+    stockDetails.classList.add('active')
 }
 
 function renderItems(categoryName) {
-    const items = sampleItems[categoryName] || [];
+    const items = sampleItems[categoryName] || []
     itemsList.innerHTML = items.map(item => `
         <div class="stock-item">
             <div class="item-info">
-                <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover;">
+                <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover">
                 <span class="item-name">${item.name}</span>
             </div>
             <div class="item-controls">
@@ -93,29 +93,29 @@ function renderItems(categoryName) {
                 <button class="btn-increase">+</button>
             </div>
         </div>
-    `).join('');
+    `).join('')
 
     document.querySelectorAll('.btn-decrease').forEach((btn, index) => {
         btn.addEventListener('click', (e) => {
-            e.stopPropagation();
+            e.stopPropagation()
             if (items[index].quantity > 0) {
-                items[index].quantity--;
-                renderItems(categoryName);
+                items[index].quantity--
+                renderItems(categoryName)
             }
-        });
-    });
+        })
+    })
 
     document.querySelectorAll('.btn-increase').forEach((btn, index) => {
         btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            items[index].quantity++;
-            renderItems(categoryName);
-        });
-    });
+            e.stopPropagation()
+            items[index].quantity++
+            renderItems(categoryName)
+        })
+    })
 }
 
 closeStockDetails.addEventListener('click', () => {
-    stockDetails.classList.remove('active');
-});
+    stockDetails.classList.remove('active')
+})
 
-renderCategories();
+renderCategories()
