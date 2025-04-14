@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let menuOpen = false;
     let currentOrderId = null;
 
-    // Sample order data (in a real app, this would come from a backend)
     const orders = {
         1: {
             id: 1,
@@ -55,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
         menuOpen = !menuOpen;
     });
 
-    // Close menu when clicking outside
     document.addEventListener('click', function(e) {
         if (menuOpen && !sideMenu.contains(e.target) && e.target !== burgerMenu) {
             burgerMenu.classList.remove('active');
@@ -64,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle order card clicks
     orderCards.forEach(card => {
         card.addEventListener('click', function() {
             const orderId = this.dataset.id;
@@ -73,27 +70,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Close details when clicking the close button
     closeDetails.addEventListener('click', function() {
         orderDetails.classList.remove('active');
     });
 
-    // Handle cancel button click
     btnCancel.addEventListener('click', function() {
         cancelModal.classList.add('active');
     });
 
-    // Handle back button in cancel modal
     btnBack.addEventListener('click', function() {
         cancelModal.classList.remove('active');
     });
 
-    // Handle close button in cancel modal
     closeCancelModal.addEventListener('click', function() {
         cancelModal.classList.remove('active');
     });
 
-    // Handle confirm cancel button
     btnConfirmCancel.addEventListener('click', function() {
         const reason = document.getElementById('cancelReason').value;
         if (!reason.trim()) {
@@ -101,29 +93,23 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Here you would typically send the cancellation to your backend
         console.log(`Pedido ${currentOrderId} cancelado. Motivo: ${reason}`);
         
-        // Close both modals and remove the order card
         cancelModal.classList.remove('active');
         orderDetails.classList.remove('active');
         document.querySelector(`[data-id="${currentOrderId}"]`).remove();
         
-        // Clear the reason textarea for next time
         document.getElementById('cancelReason').value = '';
     });
 
-    // Handle order details display
     function showOrderDetails(orderId) {
         const order = orders[orderId];
         if (!order) return;
 
-        // Update order details content
         document.querySelector('.order-id').textContent = order.id;
         document.querySelector('.customer-name').textContent = order.customer;
         document.querySelector('.pickup-time').textContent = order.time;
 
-        // Update lists
         const saladList = document.querySelector('.salad-items');
         const drinkList = document.querySelector('.drink-items');
         const notesList = document.querySelector('.notes-items');
@@ -132,19 +118,15 @@ document.addEventListener('DOMContentLoaded', function() {
         drinkList.innerHTML = order.drinks.map(item => `<li>${item}</li>`).join('');
         notesList.innerHTML = order.notes.map(item => `<li>${item}</li>`).join('');
 
-        // Show details panel
         orderDetails.classList.add('active');
     }
 
-    // Handle complete button
     document.querySelector('.btn-complete').addEventListener('click', function() {
         const orderId = document.querySelector('.order-id').textContent;
-        // Here you would typically send a request to mark the order as complete
         orderDetails.classList.remove('active');
         document.querySelector(`[data-id="${orderId}"]`).remove();
     });
 
-    // Close modals when clicking outside
     document.addEventListener('click', function(e) {
         if (orderDetails.classList.contains('active') && 
             !orderDetails.contains(e.target) && 
