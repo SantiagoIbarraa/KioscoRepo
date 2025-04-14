@@ -21,7 +21,7 @@
 
 @font-face {
     font-family: 'Backso';
-    src: url('font/Backso.ttf') format('truetype');
+    src: url('../font/Backso.ttf') format('truetype');
 }
 
 body {
