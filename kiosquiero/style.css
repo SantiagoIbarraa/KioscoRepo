@@ -44,7 +44,7 @@ body {
 
 .header h1 {
     color: white;
-    font-size: 3.5rem;
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
     letter-spacing: 8px;
     font-weight: 700;
     text-shadow: 4px 4px 0px rgba(255, 210, 48, 0.7), 
@@ -124,7 +124,7 @@ body {
 .side-menu h3 {
     font-family: 'Backso', sans-serif;
     color: var(--text);
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 3vw, 1.8rem);
     margin-bottom: var(--section-spacing);
     text-align: center;
 }
@@ -141,7 +141,7 @@ body {
 .side-menu ul li a {
     color: var(--text);
     text-decoration: none;
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
     position: relative;
     display: inline-block;
     padding: 8px 0;
@@ -179,7 +179,7 @@ body {
 .main-content h2 {
     font-family: 'Backso', sans-serif;
     color: var(--text);
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
     text-align: center;
     margin-bottom: 0.5rem;
 }
@@ -217,13 +217,13 @@ body {
 .order-card h3 {
     font-family: 'Backso', sans-serif;
     color: var(--text);
-    font-size: 1.3rem;
+    font-size: clamp(1rem, 2vw, 1.3rem);
     margin-bottom: 0.8rem;
 }
 
 .order-card .time {
     color: var(--adyacente);
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
 }
 
 /* Order details styles */
@@ -257,7 +257,7 @@ body {
 .details-header h2 {
     font-family: 'Backso', sans-serif;
     color: var(--text);
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
     margin: 0;
 }
 
@@ -281,7 +281,7 @@ body {
 .details-content h3 {
     font-family: 'Backso', sans-serif;
     color: var(--text);
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
     margin-bottom: 1rem;
 }
 
@@ -296,7 +296,7 @@ body {
 
 .order-section h4 {
     color: var(--adyacente);
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
     margin-bottom: 0.8rem;
     font-family: 'Backso', sans-serif;
 }
@@ -325,7 +325,7 @@ body {
     cursor: pointer;
     font-weight: bold;
     transition: opacity 0.2s;
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .btn-complete {
@@ -389,7 +389,7 @@ body {
 .modal-header h2 {
     font-family: 'Backso', sans-serif;
     color: var(--text);
-    font-size: 1.8rem;
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
     margin: 0;
 }
 
@@ -434,7 +434,7 @@ body {
     cursor: pointer;
     font-weight: bold;
     transition: opacity 0.2s;
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .btn-confirm-cancel {
@@ -471,23 +471,23 @@ body {
 
 .review-header h3 {
     color: var(--text);
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 2vw, 1.2rem);
 }
 
 .date {
     color: #666;
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
 }
 
 .rating {
     color: var(--fondo);
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2vw, 1.5rem);
     margin: 10px 0;
 }
 
 .preview-comment {
     color: #666;
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
     line-height: 1.4;
 }
 
@@ -523,7 +523,7 @@ body {
 .category-card h3 {
     color: var(--text);
     margin: 10px 0;
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2vw, 1.5rem);
 }
 
 .btn-ir {
@@ -573,7 +573,7 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: clamp(0.8rem, 2vw, 1.2rem);
 }
 
 /* Details panel styles */
@@ -686,7 +686,7 @@ body {
 
 .has-reply {
     color: var(--success);
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
     display: block;
     margin-top: 10px;
 }
@@ -695,6 +695,95 @@ body {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--adyacente);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+    .orders-container {
+        max-width: 100vw;
+        padding: 10px;
+        gap: 20px;
+    }
+    .main-content {
+        padding: 20px 10px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .header h1 {
+        font-size: clamp(2rem, 3.5vw, 2.5rem);
+    }
+    .orders-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    .main-content {
+        padding: 15px 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        height: 80px;
+        padding: 0 10px;
+    }
+    .header h1 {
+        font-size: clamp(1.5rem, 3vw, 1.7rem);
+        letter-spacing: 3px;
+    }
+    .side-menu {
+        width: 180px;
+        padding: 20px 10px;
+    }
+    .orders-container {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .main-content {
+        padding: 10px 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        height: 60px;
+        padding: 0 5px;
+    }
+    .header h1 {
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
+        letter-spacing: 1px;
+    }
+    .side-menu {
+        width: 120px;
+        padding: 10px 5px;
+    }
+    .main-content {
+        padding: 5px 1px;
+    }
+    .orders-container {
+        gap: 5px;
+    }
+    .card, .category {
+        min-width: 90vw !important;
+        width: 100% !important;
+    }
+}
+
+/* Prevent overflows */
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+.card, .category {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 @keyframes letterBounce {
