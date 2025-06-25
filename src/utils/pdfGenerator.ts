@@ -1,21 +1,21 @@
-import jsPDF from 'jspdf';
-import { Order } from '../types';
+import jsPDF from 'jspdf'
+import { Order } from '../types'
 
 export const generateOrderPDF = (order: Order, userName: string) => {
   const doc = new jsPDF();
   
-  // Set up colors to match the receipt design
-  const primaryColor = [139, 69, 19]; // Brown header
-  const borderColor = [139, 69, 19]; // Brown borders
-  const lightBrown = [245, 240, 230]; // Light cream background for table headers
-  const textColor = [51, 51, 51]; // Dark gray text
-  const headerTextColor = [255, 255, 255]; // White text for header
+  // Configurar colores para el diseño del comprobante
+  const primaryColor = [139, 69, 19] // Marron para el encabezado
+  const borderColor = [139, 69, 19] // Bordes marrones
+  const lightBrown = [245, 240, 230] // Fondo crema claro para encabezados de tabla
+  const textColor = [51, 51, 51] // Texto gris oscuro
+  const headerTextColor = [255, 255, 255] // Texto blanco para el encabezado
   
-  // Header section with brown background
+  // Seccion de encabezado con fondo marron
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, 210, 45, 'F');
   
-  // Header text - properly positioned
+  // Texto del encabezado - posicionado correctamente
   doc.setTextColor(...headerTextColor);
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
@@ -31,12 +31,12 @@ export const generateOrderPDF = (order: Order, userName: string) => {
   doc.setFont('helvetica', 'bold');
   doc.text('COMPROBANTE DE PEDIDO', 20, 60);
   
-  // Order details box with proper border
+  // Caja de detalles del pedido con borde
   doc.setDrawColor(...borderColor);
   doc.setLineWidth(2);
   doc.rect(20, 70, 170, 56); // Reduced height for tighter fit
   
-  // Order details content - properly spaced
+  // Contenido de detalles del pedido - con espaciado adecuado
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...textColor);
@@ -75,21 +75,21 @@ export const generateOrderPDF = (order: Order, userName: string) => {
                      order.paymentMethod === 'mercadopago' ? 'Mercado Pago' : 'Efectivo';
   doc.text(paymentText, 110, 121);
   
-  // Products section title
+  // Titulo de la seccion de productos
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.text('PRODUCTOS PEDIDOS', 20, 140);
   
-  // Table header with background
+  // Encabezado de tabla con fondo
   doc.setFillColor(...lightBrown);
   doc.rect(20, 150, 170, 10, 'F');
   
-  // Table header borders
+  // Bordes del encabezado de tabla
   doc.setDrawColor(...borderColor);
   doc.setLineWidth(1);
   doc.rect(20, 150, 170, 10);
   
-  // Table header text
+  // Texto del encabezado de tabla
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...textColor);
@@ -98,12 +98,12 @@ export const generateOrderPDF = (order: Order, userName: string) => {
   doc.text('Precio Unit.', 140, 157);
   doc.text('Subtotal', 170, 157);
   
-  // Table content
+  // Contenido de la tabla
   let yPosition = 165.8; // Start right below the header
   doc.setFont('helvetica', 'normal');
   
   order.items.forEach((item, index) => {
-    // Calculate row height based on content
+    // Calcular altura de fila segun el contenido
     let rowHeight = 12; // Reduced base row height
     let hasCustomizations = item.customizations && 
       ((item.customizations.ingredients && item.customizations.ingredients.length > 0) ||
@@ -113,20 +113,20 @@ export const generateOrderPDF = (order: Order, userName: string) => {
       rowHeight += 4; // Minimal extra space for customizations
     }
     
-    // Alternate row background
+    // Fondo alternado para filas
     if (index % 2 === 0) {
       doc.setFillColor(250, 250, 250);
       doc.rect(20, yPosition - 5, 170, rowHeight, 'F');
     }
     
-    // Row border - removed bottom border for cleaner look
+    // Borde de fila - sin borde inferior para mejor apariencia
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.5);
     doc.rect(20, yPosition - 5, 170, rowHeight);
     doc.setDrawColor(255, 255, 255); // Hide bottom border
     doc.line(20, yPosition - 5 + rowHeight, 190, yPosition - 5 + rowHeight);
     
-    // Product name (truncate if too long)
+    // Nombre del producto (recortar si es muy largo)
     let productName = item.product.name;
     if (productName.length > 25) {
       productName = productName.substring(0, 22) + '...';
@@ -139,7 +139,7 @@ export const generateOrderPDF = (order: Order, userName: string) => {
     doc.text(`$${item.product.price.toLocaleString()}`, 145, yPosition);
     doc.text(`$${(item.product.price * item.quantity).toLocaleString()}`, 175, yPosition);
     
-    // Add customizations if any
+    // Agregar personalizaciones si las hay
     if (hasCustomizations) {
       yPosition += 8;
       doc.setFontSize(8);
@@ -168,7 +168,7 @@ export const generateOrderPDF = (order: Order, userName: string) => {
     yPosition += rowHeight;
   });
   
-  // Total section with proper spacing
+  // Seccion de total con espaciado adecuado
   yPosition += 5; // Reduced spacing before total line
   doc.setDrawColor(...primaryColor);
   doc.setLineWidth(2);
@@ -182,7 +182,7 @@ export const generateOrderPDF = (order: Order, userName: string) => {
   doc.setFontSize(18);
   doc.text(`$${order.totalAmount.toLocaleString()}`, 170, yPosition);
   
-  // Footer section
+  // Seccion de pie de pagina
   yPosition += 25;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -195,8 +195,8 @@ export const generateOrderPDF = (order: Order, userName: string) => {
   yPosition += 6;
   doc.text(`Generado el: ${new Date().toLocaleString('es-AR')}`, 20, yPosition);
   
-  // QR code section removed as requested
+  // Seccion de codigo QR eliminada segun lo solicitado
   
-  // Save the PDF with proper filename
+  // Guardar el PDF con nombre de archivo apropiado
   doc.save(`comprobante-${order.id}.pdf`);
-};
+}

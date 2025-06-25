@@ -1,8 +1,8 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
-import { ToastProvider } from './contexts/ToastContext';
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { CartProvider } from './contexts/CartContext'
+import { ToastProvider } from './contexts/ToastContext'
 
 import { LoginForm } from './components/auth/LoginForm';
 import { ToastContainer } from './components/common/Toast';
@@ -30,28 +30,28 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: strin
   const { user } = useAuth();
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />
   }
   
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Instead of showing "Access Denied", redirect to appropriate page
+    // Redirigir a la ruta apropiada en lugar de mostrar "Acceso denegado"
     const getDefaultRoute = () => {
       switch (user.role) {
         case 'ciclo_basico':
         case 'ciclo_superior':
-          return '/menu';
+          return '/menu'
         case 'kiosquero':
-          return '/kiosco/dashboard';
+          return '/kiosco/dashboard'
         case 'admin':
-          return '/admin/users';
+          return '/admin/users'
         default:
-          return '/menu';
+          return '/menu'
       }
-    };
-    return <Navigate to={getDefaultRoute()} replace />;
+    }
+    return <Navigate to={getDefaultRoute()} replace />
   }
   
-  return <>{children}</>;
+  return <>{children}</>
 };
 
 const AppContent: React.FC = () => {
@@ -79,10 +79,11 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-cream-50">
       <Sidebar />
+      {/* Rutas de la aplicacion */}
       <Routes>
         <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
         
-        {/* Student Routes */}
+        {/* Rutas de Estudiante */}
         <Route path="/menu" element={
           <ProtectedRoute allowedRoles={['ciclo_basico', 'ciclo_superior']}>
             <MenuPage />
@@ -114,7 +115,7 @@ const AppContent: React.FC = () => {
           </ProtectedRoute>
         } />
 
-        {/* Kiosco Routes */}
+        {/* Rutas de Kiosco */}
         <Route path="/kiosco/dashboard" element={
           <ProtectedRoute allowedRoles={['kiosquero']}>
             <KioscoDashboard />
@@ -131,7 +132,7 @@ const AppContent: React.FC = () => {
           </ProtectedRoute>
         } />
 
-        {/* Admin Routes */}
+        {/* Rutas de Administrador */}
         <Route path="/admin/users" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <UsersPage />
@@ -143,7 +144,7 @@ const AppContent: React.FC = () => {
           </ProtectedRoute>
         } />
 
-        {/* Catch all */}
+        {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       
@@ -164,7 +165,7 @@ function App() {
         </CartProvider>
       </AuthProvider>
     </ToastProvider>
-  );
+  )
 }
 
-export default App;
+export default App
