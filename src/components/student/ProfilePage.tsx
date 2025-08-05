@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { ExpandableNavigation } from './ExpandableNavigation';
+import { supabase, isSupabaseAvailable } from '../../lib/supabase';
 import { User, Mail, Phone, MapPin, Calendar, Edit2, Save, X, Package, DollarSign, TrendingUp, Clock } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
@@ -26,37 +27,70 @@ export const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     // Calculate real order statistics from localStorage
-    const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const userOrders = allOrders.filter((order: any) => order.userId === user?.id);
-    
-    if (userOrders.length > 0) {
-      const totalOrders = userOrders.length;
-      const totalSpent = userOrders.reduce((sum: number, order: any) => sum + order.totalAmount, 0);
+    const loadOrderStats = async () => {
+      let userOrders: any[] = [];
       
-      // Find most ordered product
-      const productCounts: { [key: string]: number } = {};
-      userOrders.forEach((order: any) => {
-        order.items.forEach((item: any) => {
-          const productName = item.product.name;
-          productCounts[productName] = (productCounts[productName] || 0) + item.quantity;
+      if (isSupabaseAvailable() && supabase && user?.id) {
+        try {
+          // Try to load from Supabase first
+          const { data: ordersData } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', user.id);
+            
+          if (ordersData && ordersData.length > 0) {
+            // Convert to expected format
+            userOrders = ordersData.map(order => ({
+              userId: order.user_id,
+              totalAmount: order.total_amount,
+              createdAt: order.created_at,
+              items: [] // We'd need to fetch items separately for full stats
+            }));
+          }
+        } catch (error) {
+          console.error('Error loading orders from Supabase:', error);
+        }
+      }
+      
+      // Fallback to localStorage if no Supabase data
+      if (userOrders.length === 0) {
+        const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        userOrders = allOrders.filter((order: any) => order.userId === user?.id);
+      }
+      
+      if (userOrders.length > 0) {
+        const totalOrders = userOrders.length;
+        const totalSpent = userOrders.reduce((sum: number, order: any) => sum + order.totalAmount, 0);
+        
+        // Find most ordered product (only works with localStorage data that has items)
+        const productCounts: { [key: string]: number } = {};
+        userOrders.forEach((order: any) => {
+          if (order.items) {
+            order.items.forEach((item: any) => {
+              const productName = item.product.name;
+              productCounts[productName] = (productCounts[productName] || 0) + item.quantity;
+            });
+          }
         });
-      });
-      
-      const favoriteProduct = Object.keys(productCounts).length > 0 
-        ? Object.entries(productCounts).sort(([,a], [,b]) => (b as number) - (a as number))[0][0]
-        : 'N/A';
-      
-      const lastOrder = userOrders.sort((a: any, b: any) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )[0]?.createdAt || null;
-      
-      setOrderStats({
-        totalOrders,
-        totalSpent,
-        favoriteProduct,
-        lastOrder
-      });
-    }
+        
+        const favoriteProduct = Object.keys(productCounts).length > 0 
+          ? Object.entries(productCounts).sort(([,a], [,b]) => (b as number) - (a as number))[0][0]
+          : 'N/A';
+        
+        const lastOrder = userOrders.sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )[0]?.createdAt || null;
+        
+        setOrderStats({
+          totalOrders,
+          totalSpent,
+          favoriteProduct,
+          lastOrder
+        });
+      }
+    };
+    
+    loadOrderStats();
   }, [user]);
 
   const handleSave = () => {

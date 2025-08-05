@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ExpandableNavigation } from './ExpandableNavigation';
 import { BREAK_TIMES } from '../../data/mockData';
 import { CreditCard, Smartphone, DollarSign, Clock, ArrowLeft } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseAvailable, generateOrderId } from '../../lib/supabase';
 
 export const CheckoutPage: React.FC = () => {
   const { items, getTotalAmount, clearCart } = useCart();
@@ -27,44 +27,70 @@ export const CheckoutPage: React.FC = () => {
 
   const createOrder = async () => {
     try {
-      // Generate order ID using the database function
-      const { data: orderId, error: orderIdError } = await supabase.rpc('generate_order_id');
-      if (orderIdError) throw orderIdError;
+      // Generate order ID
+      const orderId = await generateOrderId();
+      
+      if (isSupabaseAvailable() && supabase) {
+        console.log('Creando pedido en Supabase...');
+        
+        // Create the order
+        const { error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            id: orderId,
+            user_id: user?.id,
+            total_amount: getTotalAmount(),
+            scheduled_time: selectedTime,
+            payment_method: paymentMethod,
+            status: 'pendiente',
+            user_cycle: userCycle,
+            notes: ''
+          });
 
-      // Create the order
-      const { error: orderError } = await supabase
-        .from('orders')
-        .insert({
+        if (orderError) throw orderError;
+
+        // Create order items
+        const orderItems = items.map(item => ({
+          order_id: orderId,
+          product_id: item.product.id,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+          customizations: item.customizations ? JSON.stringify(item.customizations) : null
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
+
+        if (itemsError) throw itemsError;
+        
+        console.log(`Pedido creado exitosamente en Supabase: ${orderId}`);
+      } else {
+        console.log('Guardando pedido en localStorage (modo demostración)...');
+        
+        // Fallback to localStorage for demo
+        const order = {
           id: orderId,
-          user_id: user?.id,
-          total_amount: getTotalAmount(),
-          scheduled_time: selectedTime,
-          payment_method: paymentMethod,
-          status: 'pendiente',
-          user_cycle: userCycle,
-          notes: ''
-        });
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = items.map(item => ({
-        order_id: orderId,
-        product_id: item.product.id,
-        quantity: item.quantity,
-        unit_price: item.product.price,
-        customizations: item.customizations ? JSON.stringify(item.customizations) : null
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
+          userId: user?.id,
+          items: items,
+          totalAmount: getTotalAmount(),
+          scheduledTime: selectedTime,
+          paymentMethod: paymentMethod,
+          status: 'pendiente' as const,
+          createdAt: new Date().toISOString(),
+          userCycle: userCycle
+        };
+        
+        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        existingOrders.push(order);
+        localStorage.setItem('orders', JSON.stringify(existingOrders));
+        
+        console.log(`Pedido guardado en localStorage: ${orderId}`);
+      }
+      
       return orderId;
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('Error al crear pedido:', error);
       throw error;
     }
   };

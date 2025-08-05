@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ExpandableNavigation } from './ExpandableNavigation';
 import { generateOrderPDF } from '../../utils/pdfGenerator';
 import { CheckCircle, Download, Clock, CreditCard, ArrowLeft } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseAvailable } from '../../lib/supabase';
 import { Order } from '../../types';
 
 interface DatabaseOrder {
@@ -58,59 +58,87 @@ export const OrderConfirmationPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch the specific order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderId)
-        .eq('user_id', user.id)
-        .single();
+      if (isSupabaseAvailable() && supabase) {
+        console.log('Cargando pedido desde Supabase...');
+        
+        // Fetch the specific order
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('user_id', user.id)
+          .single();
 
-      if (orderError) throw orderError;
+        if (orderError) throw orderError;
 
-      if (orderData) {
-        // Fetch order items
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('order_items')
-          .select(`
-            *,
-            product:products(id, name, category, price, description, image_url)
-          `)
-          .eq('order_id', orderId);
+        if (orderData) {
+          // Fetch order items
+          const { data: itemsData, error: itemsError } = await supabase
+            .from('order_items')
+            .select(`
+              *,
+              product:products(id, name, category, price, description, image_url)
+            `)
+            .eq('order_id', orderId);
 
-        if (itemsError) throw itemsError;
+          if (itemsError) throw itemsError;
 
-        // Convert database format to component format
-        const items = itemsData?.map((item: DatabaseOrderItem) => ({
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            category: item.product.category,
-            price: item.product.price,
-            description: item.product.description || '',
-            image: item.product.image_url || '',
-            available: true
-          },
-          quantity: item.quantity,
-          customizations: item.customizations ? JSON.parse(item.customizations) : undefined
-        })) || [];
+          // Convert database format to component format
+          const items = itemsData?.map((item: DatabaseOrderItem) => ({
+            product: {
+              id: item.product.id,
+              name: item.product.name,
+              category: item.product.category,
+              price: item.product.price,
+              description: item.product.description || '',
+              image: item.product.image_url || '',
+              available: true
+            },
+            quantity: item.quantity,
+            customizations: item.customizations ? JSON.parse(item.customizations) : undefined
+          })) || [];
 
-        const convertedOrder: Order = {
-          id: orderData.id,
-          userId: orderData.user_id,
-          items,
-          totalAmount: orderData.total_amount,
-          scheduledTime: orderData.scheduled_time,
-          paymentMethod: orderData.payment_method,
-          status: orderData.status,
-          createdAt: orderData.created_at,
-          userCycle: orderData.user_cycle
-        };
+          const convertedOrder: Order = {
+            id: orderData.id,
+            userId: orderData.user_id,
+            items,
+            totalAmount: orderData.total_amount,
+            scheduledTime: orderData.scheduled_time,
+            paymentMethod: orderData.payment_method,
+            status: orderData.status,
+            createdAt: orderData.created_at,
+            userCycle: orderData.user_cycle
+          };
 
-        setOrder(convertedOrder);
+          setOrder(convertedOrder);
+          console.log('Pedido cargado desde Supabase exitosamente');
+        }
+      } else {
+        console.log('Supabase no disponible, buscando en localStorage...');
+        // Fallback to localStorage
+        const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const foundOrder = localOrders.find((order: Order) => 
+          order.id === orderId && order.userId === user.id
+        );
+        
+        if (foundOrder) {
+          setOrder(foundOrder);
+          console.log('Pedido encontrado en localStorage');
+        } else {
+          console.log('Pedido no encontrado en localStorage');
+        }
       }
     } catch (error) {
-      console.error('Error loading order:', error);
+      console.error('Error al cargar pedido:', error);
+      // Fallback to localStorage on error
+      const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const foundOrder = localOrders.find((order: Order) => 
+        order.id === orderId && order.userId === user.id
+      );
+      
+      if (foundOrder) {
+        setOrder(foundOrder);
+      }
     } finally {
       setLoading(false);
     }
@@ -180,6 +208,13 @@ export const OrderConfirmationPage: React.FC = () => {
           <p className="text-gray-600 mb-4">
             Tu pedido ha sido recibido y está siendo procesado
           </p>
+          {!isSupabaseAvailable() && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Modo Demostración:</strong> Este pedido se guardó localmente.
+              </p>
+            </div>
+          )}
           <div className="bg-primary-50 rounded-lg p-4">
             <p className="text-sm text-gray-600">Número de pedido</p>
             <p className="text-2xl font-bold text-primary-600">{order.id}</p>

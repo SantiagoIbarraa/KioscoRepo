@@ -4,7 +4,8 @@ import { CartSidebar } from './CartSidebar';
 import { ExpandableNavigation } from './ExpandableNavigation';
 import { useCart } from '../../contexts/CartContext';
 import { useToast } from '../../contexts/ToastContext';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseAvailable } from '../../lib/supabase';
+import { PRODUCTS } from '../../data/mockData';
 import { ShoppingCart, Search } from 'lucide-react';
 
 interface Product {
@@ -43,17 +44,71 @@ export const MenuPage: React.FC = () => {
 
   const loadProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_available', true)
-        .order('name');
+      if (isSupabaseAvailable() && supabase) {
+        console.log('Intentando cargar productos desde Supabase...');
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_available', true)
+          .order('name');
 
-      if (error) throw error;
-      setProducts(data || []);
+        if (error) {
+          console.error('Error de Supabase:', error);
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          console.log(`Productos cargados desde Supabase: ${data.length}`);
+          setProducts(data);
+        } else {
+          console.log('No se encontraron productos en Supabase, usando datos de demostración');
+          // Convert mock data to database format
+          const mockProducts = PRODUCTS.map(product => ({
+            id: product.id,
+            name: product.name,
+            category: product.category,
+            price: product.price,
+            description: product.description,
+            image_url: product.image,
+            is_available: product.available,
+            is_customizable: product.customizable || false,
+            ingredients: product.ingredients || null
+          }));
+          setProducts(mockProducts);
+        }
+      } else {
+        console.log('Supabase no disponible, usando datos de demostración');
+        // Convert mock data to database format
+        const mockProducts = PRODUCTS.map(product => ({
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          description: product.description,
+          image_url: product.image,
+          is_available: product.available,
+          is_customizable: product.customizable || false,
+          ingredients: product.ingredients || null
+        }));
+        setProducts(mockProducts);
+      }
     } catch (error) {
-      console.error('Error loading products:', error);
-      addToast('Error al cargar productos', 'error');
+      console.error('Error al cargar productos:', error);
+      addToast('Error al cargar productos, usando datos de demostración', 'info');
+      
+      // Fallback to mock data
+      const mockProducts = PRODUCTS.map(product => ({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        description: product.description,
+        image_url: product.image,
+        is_available: product.available,
+        is_customizable: product.customizable || false,
+        ingredients: product.ingredients || null
+      }));
+      setProducts(mockProducts);
     } finally {
       setLoading(false);
     }
@@ -112,6 +167,14 @@ export const MenuPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="mb-4">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Menú del Kiosco</h1>
+            {!isSupabaseAvailable() && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>Modo Demostración:</strong> Mostrando productos de ejemplo. 
+                  Configura las variables de entorno de Supabase para conectar a la base de datos.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Search */}
