@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ExpandableNavigation } from './ExpandableNavigation';
 import { BREAK_TIMES } from '../../data/mockData';
 import { CreditCard, Smartphone, DollarSign, Clock, ArrowLeft } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export const CheckoutPage: React.FC = () => {
   const { items, getTotalAmount, clearCart } = useCart();
@@ -24,6 +25,50 @@ export const CheckoutPage: React.FC = () => {
     return `$${price.toLocaleString()}`;
   };
 
+  const createOrder = async () => {
+    try {
+      // Generate order ID using the database function
+      const { data: orderId, error: orderIdError } = await supabase.rpc('generate_order_id');
+      if (orderIdError) throw orderIdError;
+
+      // Create the order
+      const { error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          id: orderId,
+          user_id: user?.id,
+          total_amount: getTotalAmount(),
+          scheduled_time: selectedTime,
+          payment_method: paymentMethod,
+          status: 'pendiente',
+          user_cycle: userCycle,
+          notes: ''
+        });
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = items.map(item => ({
+        order_id: orderId,
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        customizations: item.customizations ? JSON.stringify(item.customizations) : null
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      return orderId;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -34,34 +79,21 @@ export const CheckoutPage: React.FC = () => {
 
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Create order
-    const orderId = `ORD-${Date.now()}`;
-    
-    // Store order in localStorage for demo
-    const order = {
-      id: orderId,
-      userId: user?.id,
-      items: items,
-      totalAmount: getTotalAmount(),
-      scheduledTime: selectedTime,
-      paymentMethod,
-      status: 'pendiente',
-      createdAt: new Date().toISOString(),
-      userCycle
-    };
-
-    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    existingOrders.push(order);
-    localStorage.setItem('orders', JSON.stringify(existingOrders));
-
-    clearCart();
-    setIsProcessing(false);
-    
-    addToast('¡Pedido realizado con éxito!', 'success');
-    navigate(`/order-confirmation/${orderId}`);
+    try {
+      // Create order in database
+      const orderId = await createOrder();
+      
+      // Clear cart after successful order
+      clearCart();
+      
+      addToast('¡Pedido realizado con éxito!', 'success');
+      navigate(`/order-confirmation/${orderId}`);
+    } catch (error) {
+      console.error('Error processing order:', error);
+      addToast('Error al procesar el pedido. Inténtalo de nuevo.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0) {

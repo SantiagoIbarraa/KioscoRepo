@@ -1,18 +1,134 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ExpandableNavigation } from './ExpandableNavigation';
 import { generateOrderPDF } from '../../utils/pdfGenerator';
 import { CheckCircle, Download, Clock, CreditCard, ArrowLeft } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { Order } from '../../types';
+
+interface DatabaseOrder {
+  id: string;
+  user_id: string;
+  total_amount: number;
+  scheduled_time: string;
+  payment_method: 'tarjeta' | 'mercadopago' | 'efectivo';
+  status: 'pendiente' | 'en_preparacion' | 'listo' | 'entregado' | 'cancelado';
+  user_cycle: 'ciclo_basico' | 'ciclo_superior';
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+}
+
+interface DatabaseOrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  customizations: string | null;
+  created_at: string;
+  product: {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    description: string | null;
+    image_url: string | null;
+  };
+}
 
 export const OrderConfirmationPage: React.FC = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Get order from localStorage for demo
-  const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-  const order = orders.find((o: any) => o.id === orderId);
+  useEffect(() => {
+    if (orderId) {
+      loadOrder();
+    }
+  }, [orderId]);
+
+  const loadOrder = async () => {
+    if (!orderId || !user?.id) return;
+
+    try {
+      setLoading(true);
+      
+      // Fetch the specific order
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (orderError) throw orderError;
+
+      if (orderData) {
+        // Fetch order items
+        const { data: itemsData, error: itemsError } = await supabase
+          .from('order_items')
+          .select(`
+            *,
+            product:products(id, name, category, price, description, image_url)
+          `)
+          .eq('order_id', orderId);
+
+        if (itemsError) throw itemsError;
+
+        // Convert database format to component format
+        const items = itemsData?.map((item: DatabaseOrderItem) => ({
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            category: item.product.category,
+            price: item.product.price,
+            description: item.product.description || '',
+            image: item.product.image_url || '',
+            available: true
+          },
+          quantity: item.quantity,
+          customizations: item.customizations ? JSON.parse(item.customizations) : undefined
+        })) || [];
+
+        const convertedOrder: Order = {
+          id: orderData.id,
+          userId: orderData.user_id,
+          items,
+          totalAmount: orderData.total_amount,
+          scheduledTime: orderData.scheduled_time,
+          paymentMethod: orderData.payment_method,
+          status: orderData.status,
+          createdAt: orderData.created_at,
+          userCycle: orderData.user_cycle
+        };
+
+        setOrder(convertedOrder);
+      }
+    } catch (error) {
+      console.error('Error loading order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cream-50 pl-16">
+        <ExpandableNavigation />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando pedido...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
